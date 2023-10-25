@@ -24,8 +24,8 @@ def choose_model():
         targetSelect = st.selectbox("Select Target:", df.columns)
         
         if df[targetSelect].dtype != "object":
-            st.write("Coloumn Selected can be dealt with as Clustering (label Encoded) or Regression, Please Select option...")
-            subType = st.selectbox("Select Mode:",['Regression','Clustering'] )
+            st.write("Coloumn Selected can be dealt with as Classification (label Encoded) or Regression, Please Select option...")
+            subType = st.selectbox("Select Mode:",['Regression','Classification'] )
             if(subType == 'Regression'):
                 model_select = regression_ml.ml_select(df)
                 return targetSelect, model_select,'Regression'
@@ -448,7 +448,7 @@ def main():
 
         if st.checkbox("Show NA Values Statistics"):
             na_stats = df.isna().sum()
-            st.write("NA Values Statistics:")
+            st.write("NA Values Statistics & Handling:")
             st.write(na_stats)
 
             df = handle_na_values(df)
