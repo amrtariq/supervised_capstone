@@ -12,27 +12,27 @@ from pycaret import regression,classification, clustering
 
 best_used=0
 df = pd.DataFrame()
+dfOrigin = df
 
 def choose_model():
+    global dfOrigin
     #selectType = 
     typeSelect = st.selectbox("Select Mode:",['Other','Clustering'] )
-    st.write('For Regresssion/Classification Select Other')
+    st.write('For Regresssion/Classification Select Other Clustering is Extra Only')
     if typeSelect == 'Clustering':
         model_select = clustering_ml.ml_select(df)
         return 'Clustering',model_select,'Clustering'
     else:
-        targetSelect = st.selectbox("Select Target:", df.columns)
+        targetSelect = st.selectbox("Select Target:", dfOrigin.columns)
         
-        if df[targetSelect].dtype != "object":
-            st.write("Coloumn Selected can be dealt with as Classification (label Encoded) or Regression, Please Select option...")
-            subType = st.selectbox("Select Mode:",['Regression','Classification'] )
-            if(subType == 'Regression'):
-                model_select = regression_ml.ml_select(df)
-                return targetSelect, model_select,'Regression'
-            else:
-                model_select = classification_ml.ml_select(df)
-                return targetSelect, model_select,'Classification'
-        elif df[targetSelect].dtype == "object":
+        if dfOrigin[targetSelect].dtype != "object":
+            st.write("Coloumn Selected Should be Dealt with as Regression...")
+            #subType = st.selectbox("Select Mode:",['Regression','Classification'] )
+            #if(subType == 'Regression'):
+            model_select = regression_ml.ml_select(df)
+            return targetSelect, model_select,'Regression'
+        elif dfOrigin[targetSelect].dtype == "object":
+            st.write("Coloumn Selected Should be Dealt with as Classification...")
             model_select = classification_ml.ml_select(df)
             return targetSelect, model_select,'Classification'
 
@@ -65,7 +65,7 @@ class regression_ml:
     def ml_train(_self,df, targetSelect, model_select):        
 
         # Initialize setup
-        s = regression.setup(df, session_id= 123, target = targetSelect,iterative_imputation_iters = 10, train_size = 0.8,fold_shuffle= False)
+        s = regression.setup(df, session_id= 123, target = targetSelect,iterative_imputation_iters = 10, train_size = 0.8,fold_shuffle= True)
         
         # Compare models
         if (model_select):
@@ -233,7 +233,7 @@ def convert_df(df):
 
 def convert_categorical(df):
     st.markdown("### Handling Categorical Columns")
-    categorical_columns = df.select_dtypes(include=["object"]).columns
+    categorical_columns = dfOrigin.select_dtypes(include=["object"]).columns
 
     for column in categorical_columns:
         st.write(f"Handling column: {column}")
@@ -254,8 +254,8 @@ def convert_categorical(df):
 def scale_data(df):
     st.markdown("### Handling Continous Columns")
     continous_columns=[]
-    for column in df.columns:
-        if df[column].dtype != "object":
+    for column in dfOrigin.columns:
+        if dfOrigin[column].dtype != "object":
             continous_columns.append(column)
     selectedColumns = st.multiselect("Choose Columns to Scale(min-max):",continous_columns)
     sc =MinMaxScaler()
@@ -305,7 +305,7 @@ def handle_na_values(df):
 
     for column in columns_with_na:
         st.write(f"Handling NA values for column: {column}")
-        if df[column].dtype == "object":
+        if dfOrigin[column].dtype == "object":
             # Handling categorical columns
             action = st.selectbox(f"Select action for column '{column}':", [
                                   "Drop NA Rows", "Fill with Mode", "Leave as NA"])
@@ -436,7 +436,9 @@ def main():
 
     if uploaded_file is not None:
         global df
+        global dfOrigin
         df = load_data(uploaded_file)
+        dfOrigin = df
 
         st.markdown("## Preview of the Data")
         st.write(df.head())
@@ -446,7 +448,7 @@ def main():
             # st.write(df.describe())
             show_summary_statistics(df)
 
-        if st.checkbox("Show NA Values Statistics"):
+        if st.checkbox("Show & Handle NA/Null Values"):
             na_stats = df.isna().sum()
             st.write("NA Values Statistics & Handling:")
             st.write(na_stats)
