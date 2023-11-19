@@ -214,6 +214,7 @@ def draw_pairs(df):
 
 
 def handle_initial_clean(df):
+    global dfOrigin
     st.markdown("### Manual Initial Clean")
     st.write('Select Columns To Delete...')
     #columnToDelete = st.selectbox("Select Coloumn to delete:",options=df.columns)
@@ -222,6 +223,7 @@ def handle_initial_clean(df):
     for column in df.columns:
         if(cols[count % 5].checkbox(f"{column}")):
             df = df.drop([column], axis=1)
+            dfOrigin = dfOrigin.drop([column], axis=1)
         count = count+1
     st.write("\n\n")
     return df
